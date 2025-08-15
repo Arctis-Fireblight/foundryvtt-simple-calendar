@@ -17,7 +17,6 @@ import MainApp from "./applications/main-app";
 import UserPermissions from "./configuration/user-permissions";
 import { canUser } from "./utilities/permissions";
 import GameSockets from "./foundry-interfacing/game-sockets";
-import { RoundData } from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/client/data/documents/combat";
 import MultiSelect from "./renderer/multi-select";
 import { GetThemeName } from "./utilities/visual";
 import { FoundryVTTGameData } from "./foundry-interfacing/game-data";
@@ -325,19 +324,19 @@ export default class SCController {
      * Adds the calendar button to the token button list
      * @param controls
      */
-    public getSceneControlButtons(controls: any[]) {
-        if (canUser((<Game>game).user, this.globalConfiguration.permissions.viewCalendar)) {
-            const tokenControls = controls.find((c) => {
+    public getSceneControlButtons(controls: Record<string, any>) {
+        if (canUser(game.user!, this.globalConfiguration.permissions.viewCalendar)) {
+            const noteControls = Object.values(controls).find((c) => {
                 return c.name === "notes";
             });
-            if (tokenControls && Object.prototype.hasOwnProperty.call(tokenControls, "tools")) {
-                tokenControls.tools.push({
+            if (noteControls?.tools) {
+                noteControls.tools["calendar"] = {
                     name: "calendar",
                     title: "FSC.Title",
                     icon: "fas fa-calendar simple-calendar-icon",
                     button: true,
-                    onClick: MainApplication.sceneControlButtonClick.bind(MainApplication)
-                });
+                    onChange: MainApplication.sceneControlButtonClick.bind(MainApplication)
+                };
             }
         }
     }
@@ -345,13 +344,11 @@ export default class SCController {
     /**
      * Checks settings to see if the note directory should be shown or hidden from the journal directory
      */
-    public async renderJournalDirectory(tab: JournalDirectory, jquery: JQuery) {
+    public async renderJournalDirectory(tab: JournalDirectory, element: HTMLElement) {
         await NManager.createJournalDirectory();
         if (!this.globalConfiguration.showNotesFolder && NManager.noteDirectory) {
-            const folder = jquery.find(`.folder[data-folder-id='${NManager.noteDirectory.id}']`);
-            if (folder) {
-                folder.remove();
-            }
+            const folder = element.querySelector(`.folder[data-folder-id='${NManager.noteDirectory.id}']`);
+            folder?.remove();
         }
     }
 
@@ -373,25 +370,22 @@ export default class SCController {
      * @param jquery
      * @param data
      */
-    public renderSceneConfig(config: SceneConfig, jquery: JQuery, data: SceneConfig.Data) {
-        if (!this.globalConfiguration.showNotesFolder && data.journals) {
-            for (let i = 0; i < data.journals.length; i++) {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                //@ts-ignore
-                const je = (<Game>game).journal?.get(data.journals[i].id);
-                if (je) {
-                    const nd = <SimpleCalendar.NoteData>je.getFlag(ModuleName, "noteData");
-                    if (nd) {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        //@ts-ignore
-                        const option = jquery.find(`option[value='${data.journals[i].id}']`);
-                        if (option) {
-                            option.remove();
-                        }
-                    }
-                }
-            }
-        }
+    public renderSceneConfig(config: SceneConfig, element: HTMLElement, data: SceneConfig.RenderContext, options: SceneConfig.RenderOptions) {
+        console.log("TEST RENDER SCENE CONFIG", config, element, data, options);
+        // if (!this.globalConfiguration.showNotesFolder && data.journals) {
+        //     for (let i = 0; i < data.journals.length; i++) {
+        //         const je = game.journal?.get(data.journals[i].id);
+        //         if (je) {
+        //             const nd = je.getFlag(ModuleName, "noteData");
+        //             if (nd) {
+        //                 const option = element.querySelector(`option[value='${data.journals[i].id}']`);
+        //                 if (option) {
+        //                     option.remove();
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     /**
@@ -441,7 +435,7 @@ export default class SCController {
      * @param round The current turns data
      * @param time The amount of time that has advanced
      */
-    public combatUpdate(combat: Combat, round: RoundData, time: any) {
+    public combatUpdate(combat: Combat, round: Combat.UpdateData, time: any) {
         const activeScene = GameSettings.GetSceneForCombatCheck();
         if (combat.started && ((activeScene !== null && combat.scene && combat.scene.id === activeScene.id) || activeScene === null)) {
             this.activeCalendar.time.combatRunning = true;

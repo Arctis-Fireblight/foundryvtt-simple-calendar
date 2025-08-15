@@ -119,6 +119,9 @@ const game = {
         unshift: (v: any) => {},
         contents: () => {
             return [user];
+        },
+        [Symbol.iterator]: () => {
+            return [user][Symbol.iterator]();
         }
     },
     scenes: null,
