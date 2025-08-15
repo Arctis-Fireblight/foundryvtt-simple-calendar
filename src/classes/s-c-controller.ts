@@ -371,21 +371,16 @@ export default class SCController {
      * @param data
      */
     public renderSceneConfig(config: SceneConfig, element: HTMLElement, data: SceneConfig.RenderContext, options: SceneConfig.RenderOptions) {
-        console.log("TEST RENDER SCENE CONFIG", config, element, data, options);
-        // if (!this.globalConfiguration.showNotesFolder && data.journals) {
-        //     for (let i = 0; i < data.journals.length; i++) {
-        //         const je = game.journal?.get(data.journals[i].id);
-        //         if (je) {
-        //             const nd = je.getFlag(ModuleName, "noteData");
-        //             if (nd) {
-        //                 const option = element.querySelector(`option[value='${data.journals[i].id}']`);
-        //                 if (option) {
-        //                     option.remove();
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        if (this.globalConfiguration.showNotesFolder) return;
+        
+        const select = element.querySelector("select[name=journal]");
+        if (!select) return;
+
+        const noteJournals = game.journal?.filter((j) => !!j.getFlag(ModuleName, "noteData"));
+        for (const journal of noteJournals ?? []) {
+            const option = select.querySelector(`option[value='${journal.id}']`);
+            option?.remove();
+        }
     }
 
     /**

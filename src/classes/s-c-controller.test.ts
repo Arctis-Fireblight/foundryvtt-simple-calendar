@@ -361,14 +361,10 @@ describe("SCController Tests", () => {
     });
 
     test("Render Scene Config", () => {
-        const mockQuery = {
-            find: jest.fn()
-        };
-        const mockFindResult = { remove: jest.fn() };
-        mockQuery.find.mockReturnValue(mockFindResult);
+        const element = document.createElement("div")
 
         //@ts-ignore
-        SC.renderSceneConfig({}, mockQuery, { journals: [{ id: "asd", name: "asd" }] });
+        SC.renderSceneConfig({}, element, { });
     });
 
     test("Game Paused", () => {
