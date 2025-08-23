@@ -218,17 +218,12 @@ export class GameSettings {
 
     /** 
      * Checks if the calendar should be paused because of combat.
-     * There must be at least one started combat, and either:
-     * - No active scene
-     * - One combat linked to the active scene
-     * - All started combats are unlinked to any scene 
+     * There must be at least one started combat relevant for the scene. Global combats are relevant to all scenes
      */
     static shouldPauseForCombat(): boolean {
         const activeScene = GameSettings.GetSceneForCombatCheck();
         const startedCombats = game.combats?.filter((c) => c.started) ?? [];
-        return (
-            startedCombats.length > 0 &&
-            (activeScene === null || startedCombats.some((g) => g.scene?.id === activeScene?.id) || startedCombats.every((g) => !g.scene))
-        );
+        if (startedCombats.length > 0 && !activeScene) return true;
+        return startedCombats.some((c) => !c.scene || c.scene?.id === activeScene?.id);
     }
 }
