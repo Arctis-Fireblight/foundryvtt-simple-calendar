@@ -1300,18 +1300,10 @@ export default class MainApp extends FormApplication {
     //---------------------------
 
     /**
-     * Starts the built-in timekeeper
+     * Starts the built-in timekeeper. 
      */
     startTime() {
-        const activeScene = GameSettings.GetSceneForCombatCheck();
-        const combats = (<Game>game).combats;
-        if (
-            combats &&
-            combats.size > 0 &&
-            combats.find((g) => {
-                return g.started && ((activeScene !== null && g.scene && g.scene.id === activeScene.id) || activeScene === null);
-            })
-        ) {
+        if (GameSettings.shouldPauseForCombat()) {
             ui.notifications?.warn("FSC.Warn.Time.ActiveCombats", { localize: true });
         } else if (
             this.activeCalendar.generalSettings.gameWorldTimeIntegration === GameWorldTimeIntegrations.None ||

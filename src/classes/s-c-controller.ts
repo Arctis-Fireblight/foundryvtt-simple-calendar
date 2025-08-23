@@ -305,14 +305,7 @@ export default class SCController {
     }
 
     private checkCombatActive() {
-        const activeScene = GameSettings.GetSceneForCombatCheck();
-        const combat = (<Game>game).combats?.find((c: Combat) => {
-            if (c.scene && activeScene) {
-                return c.scene.id === activeScene.id;
-            }
-            return false;
-        });
-        if (combat && combat.started) {
+        if (GameSettings.shouldPauseForCombat()) {
             this.activeCalendar.time.combatRunning = true;
         }
     }
@@ -410,17 +403,9 @@ export default class SCController {
      * @param combatant The combatant details
      */
     public createCombatant(combatant: Combatant) {
-        const combatList = (<Game>game).combats;
-        //If combat is running or if the combat list is undefined, skip this check
-        if (!this.activeCalendar.time.combatRunning && combatList) {
-            const combat = combatList.find((c) => {
-                return c.id === combatant.parent?.id;
-            });
-            const activeScene = GameSettings.GetSceneForCombatCheck();
-            //If the combat has started and the current active scene is the scene for the combat then set that there is a combat running.
-            if (combat && combat.started && ((activeScene !== null && combat.scene && combat.scene.id === activeScene.id) || activeScene === null)) {
-                this.activeCalendar.time.combatRunning = true;
-            }
+        //If the combat has started and the current active scene is the scene for the combat then set that there is a combat running.
+        if (GameSettings.shouldPauseForCombat()) {
+            this.activeCalendar.time.combatRunning = true;
         }
     }
 
@@ -431,8 +416,7 @@ export default class SCController {
      * @param time The amount of time that has advanced
      */
     public combatUpdate(combat: Combat, round: Combat.UpdateData, time: any) {
-        const activeScene = GameSettings.GetSceneForCombatCheck();
-        if (combat.started && ((activeScene !== null && combat.scene && combat.scene.id === activeScene.id) || activeScene === null)) {
+        if (GameSettings.shouldPauseForCombat()) {
             this.activeCalendar.time.combatRunning = true;
 
             //If time does not have the advanceTime property the combat was just started
@@ -452,8 +436,7 @@ export default class SCController {
      * @param combat The specific combat data
      */
     public combatDelete(combat: Combat) {
-        const activeScene = GameSettings.GetSceneForCombatCheck();
-        if (activeScene !== null && combat.scene && combat.scene.id === activeScene.id) {
+        if (!GameSettings.shouldPauseForCombat()) {
             this.activeCalendar.time.combatRunning = false;
         }
     }
@@ -464,12 +447,15 @@ export default class SCController {
      * @param canvas The canvas data
      */
     public canvasInit(canvas: Canvas) {
-        if (GameSettings.IsGm() && this.primary && this.globalConfiguration.combatPauseRule === CombatPauseRules.Current) {
-            const activeScene = canvas.scene ? canvas.scene.id : null;
-            const combatsInCurrent = (<Game>game).combats?.filter((combat) => {
-                return combat.started && combat.scene?.id === activeScene;
-            });
-            this.activeCalendar.time.combatRunning = !!(combatsInCurrent && combatsInCurrent.length);
+        if (GameSettings.IsGm() && this.primary) {
+            this.activeCalendar.time.combatRunning = GameSettings.shouldPauseForCombat();
+        }
+    }
+
+    /** Triggered when the scene is updated, and used to check when a scene has become active */
+    public updateScene(scene: Scene) {
+        if (scene.active && this.globalConfiguration.combatPauseRule === CombatPauseRules.Active) {
+            this.activeCalendar.time.combatRunning = GameSettings.shouldPauseForCombat();
         }
     }
 

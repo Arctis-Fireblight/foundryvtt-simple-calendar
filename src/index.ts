@@ -95,6 +95,7 @@ Hooks.on("createCombatant", SC.createCombatant.bind(SC));
 Hooks.on("updateCombat", (SC.combatUpdate.bind(SC)));
 Hooks.on("deleteCombat", SC.combatDelete.bind(SC));
 Hooks.on("pauseGame", SC.gamePaused.bind(SC));
+Hooks.on("updateScene", SC.updateScene.bind(SC));
 Hooks.on("preCreateChatMessage", Chat.createChatMessage);
 Hooks.on("renderChatMessage", Chat.onRenderChatMessage);
 Hooks.on("renderMainApp", MainApp.setWidthHeight);

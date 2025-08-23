@@ -1053,12 +1053,7 @@ describe("Main App Class Tests", () => {
         //@ts-ignore
         game.scenes = {};
         //@ts-ignore
-        game.combats = {
-            size: 1,
-            find: (v: any) => {
-                return v.call(undefined, { started: true, scene: { id: "s1" } });
-            }
-        };
+        game.combats = [{ started: true, scene: { id: "s1" } }];
         ma.startTime();
         expect(ui.notifications?.warn).toHaveBeenCalledTimes(1);
 

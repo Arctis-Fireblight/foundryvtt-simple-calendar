@@ -20,7 +20,7 @@
   "types": "types/index.d.ts",
   "scripts": {
     "build": "webpack",
-    "watch": "webpack --watch",
+    "watch": "webpack --watch --mode=development",
     "test": "jest",
     "unusedI18N": "i18n-unused display-unused",
     "writedocs": "cd simple-calendar-docs && npm install && npm run build"
