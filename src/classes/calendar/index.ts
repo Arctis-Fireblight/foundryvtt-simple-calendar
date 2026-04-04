@@ -667,8 +667,8 @@ export default class Calendar extends ConfigurationItemBase {
             verifiedSetting === "current"
                 ? this.year.numericRepresentation
                 : verifiedSetting === "visible"
-                ? this.year.visibleYear
-                : this.year.selectedYear;
+                  ? this.year.visibleYear
+                  : this.year.selectedYear;
         const isLeapYear = this.year.leapYearRule.isLeapYear(yearToUse);
         if (month === -1 || month >= this.months.length) {
             month = this.months.length - 1;
@@ -1251,6 +1251,7 @@ export default class Calendar extends ConfigurationItemBase {
                 // If the current player is the GM then we need to save this new value to the database
                 // Since the current date is updated this will trigger an update on all players as well
                 this.setDateTime(parsedDate, { updateApp: false, sync: false, save: GameSettings.IsGm() && SC.primary });
+                Renderer.Clock.UpdateListener(`sc_${this.id}_clock`, this.timeKeeper.getStatus());
             }
         }
         this.timeChangeTriggered = false;

@@ -64,6 +64,7 @@ export default class CalendarManager {
      * @returns {number} The number of calendars loaded
      */
     public loadCalendars(): number {
+        const origDate = this.getVisibleCalendar()?.getCurrentDate();
         const calendars = <SimpleCalendar.CalendarData[]>GameSettings.GetObjectSettings(SettingNames.CalendarConfiguration);
         //Default array is being returned with an empty string, if this is the case we need to return that empty string to get an empty array
         if (calendars.length === 1 && !calendars[0]) {
@@ -87,8 +88,17 @@ export default class CalendarManager {
         }
         NManager.checkNoteTriggers(this.activeId);
         const cal = this.getVisibleCalendar();
+        // Check to see if the time keeper is running, if so we dont want to fully redraw.
         if (cal && cal.timeKeeper.getStatus() !== TimeKeeperStatus.Started) {
-            MainApplication.updateApp();
+            // Additionally, real time clocks can be being handled by external systems and can trigger reloads
+            // as often as every second, like Shadowdark, we dont want to fully redraw the calendar if only the time has changed.
+            // Fixes issue GH-28
+            if (origDate) {
+                const currDate = cal.getCurrentDate();
+                if (currDate.year !== origDate.year || currDate.month !== origDate.month || currDate.day !== origDate.day) {
+                    MainApplication.updateApp();
+                }
+            } else MainApplication.updateApp();
         }
         return Object.keys(this.calendars).length;
     }
